@@ -34,7 +34,7 @@ class NN(nn.Module):
         self.conv2=nn.Conv2d(1024,512,kernel_size=3)
         self.conv3 = nn.Conv2d(512,256,kernel_size=3)
         self.conv4 = nn.Conv2d(256,128,kernel_size=3)
-        self.linear = nn.Linear(56,2)
+        self.linear = nn.Linear(401408,1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self,x):
@@ -42,10 +42,9 @@ class NN(nn.Module):
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
+        x = x.view(x.size(0), -1)
         x = self.linear(x)
-        x=self.sigmoid(x)
-
-        return x
+        return torch.sigmoid(x)
 
 
     
@@ -58,16 +57,16 @@ optimizer =  optim.Adam(model.parameters(),lr=learning_rate)
 for epoch in range(num_epochs):
     for batch_idx, (data, targets) in enumerate(train_loader):
         data = data.to(device=device)
-        targets=targets.to(device=device)
+        targets = targets.to(device)
+        targets = targets.to(torch.float32)
 
         print(data.shape)
         data.reshape(data.shape[0],-1)
 
         scores = model(data)
-        targets = targets.unsqueeze(1)
-        targets = targets.unsqueeze(1)
-        print(scores.shape)
-        print(targets.shape)
+
+        print(f"Scores",{scores.shape})
+        print(f"Target",{targets.shape})
         loss = criterion(scores,targets)
 
         print('Epoch',epoch,'Loss:',loss.item(), '- Pred:',scores.data[0])
